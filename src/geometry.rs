@@ -1,29 +1,39 @@
-use crate::maths::Vec3;
+use crate::maths::vec3;
 
 #[derive(Debug, Clone, Copy)]
-struct Ray {
-    origin: Vec3,
-    direction: Vec3,
+pub struct Ray {
+    pub origin: vec3,
+    pub direction: vec3,
 }
 
 impl Ray {
-    fn new(origin: Vec3, direction: Vec3) -> Self {
+    pub fn new(origin: vec3, direction: vec3) -> Self {
         Self { origin, direction }
     }
 
-    fn at(&self, t: f64) -> Vec3 {
+    pub fn at(&self, t: f64) -> vec3 {
         self.origin + self.direction * t
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-struct Sphere {
-    center: Vec3,
-    radius: f64,
+pub struct Sphere {
+    pub center: vec3,
+    pub radius: f64,
 }
 
 impl Sphere {
-    fn new(center: Vec3, radius: f64) -> Self {
+    pub fn new(center: vec3, radius: f64) -> Self {
         Self { center, radius }
+    }
+
+    pub fn hit(center: vec3, radius: f64, ray: &Ray) -> bool {
+        let oc = center - ray.origin;
+        let a = vec3::dot(ray.direction, ray.direction);
+        let b = -2.0 * vec3::dot(ray.direction, oc);
+        let c = vec3::dot(oc, oc) - radius * radius;
+        let discriminant = b * b - 4.0 * a * c;
+
+        (discriminant >= 0.0)
     }
 }
