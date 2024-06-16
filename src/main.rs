@@ -78,7 +78,7 @@ impl App {
         Self {
             tick_count: 0,
             marker: Marker::Dot,
-            renderer: Renderer::new(100, 50),
+            renderer: Renderer::new(64, 32),
             display_state: ImageDisplayState {
                 x: 0.0,
                 y: 0.0,

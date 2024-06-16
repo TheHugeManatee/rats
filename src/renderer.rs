@@ -1,6 +1,7 @@
 use ratatui::prelude::Color;
 
 pub struct Renderer {
+    dimensions: (usize, usize),
     color_buffer: Vec<Vec<Color>>,
     next_line_to_process: usize,
 }
@@ -15,20 +16,20 @@ impl Renderer {
     pub fn new(width: usize, height: usize) -> Renderer {
         let color_buffer = vec![vec![Color::default(); width]; height];
         Renderer {
+            dimensions: (width, height),
             color_buffer,
             next_line_to_process: 0,
         }
     }
 
-    pub fn get_color_buffer(&self) -> &Vec<Vec<Color>> {
-        &self.color_buffer
+    pub fn get_progress_percentage(&self) -> f64 {
+        let (_width, height) = self.get_color_buffer_size();
+
+        self.next_line_to_process as f64 / height as f64
     }
 
-    pub fn get_progress_percentage(&self) -> f64 {
-        let (width, height) = self.get_color_buffer_size();
-        let total_pixels = width * height;
-        let processed_pixels = self.next_line_to_process * width;
-        processed_pixels as f64 / total_pixels as f64
+    pub fn get_color_buffer(&self) -> &Vec<Vec<Color>> {
+        &self.color_buffer
     }
 
     pub fn render_step(&mut self) {
@@ -47,8 +48,11 @@ impl Renderer {
     fn render_line(&mut self, line_index: usize) {
         let row = self.color_buffer.get_mut(line_index).unwrap();
         for (xi, pixel) in row.iter_mut().enumerate() {
-            let r = xi as u8;
-            let g = line_index as u8;
+            let x: f64 = xi as f64 / self.dimensions.0 as f64;
+            let y: f64 = line_index as f64 / self.dimensions.1 as f64;
+
+            let r = (x * 255.0) as u8;
+            let g = (y * 255.0) as u8;
 
             *pixel = Color::Rgb(r, g, 0);
         }

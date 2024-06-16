@@ -6,12 +6,20 @@ pub struct ImageDisplay {
 }
 
 impl ImageDisplay {
-    // Implement the new() method
-    pub fn new(image_buffer: Vec<Vec<Color>>) -> Self {
-        ImageDisplay { image_buffer }
+    fn draw_pixel(&self, buf: &mut Buffer, x: u16, y: u16, color: Color) {
+        if x >= buf.area().width || y >= buf.area().height {
+            return;
+        }
+        // Draw the pixel on the buffer
+        buf.get_mut(x, y).set_char('.').set_fg(color).set_bg(color);
     }
 }
 
+impl ImageDisplay {
+    pub fn new(image_buffer: Vec<Vec<Color>>) -> Self {
+        Self { image_buffer }
+    }
+}
 
 // stores the position and zoom
 pub struct ImageDisplayState {
@@ -24,35 +32,34 @@ impl StatefulWidget for ImageDisplay {
     type State = ImageDisplayState;
 
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
-        // Calculate the number of image pixels to display based on the zoom level
-        let display_width = (area.width as f64 * state.zoom).round() as usize;
-        let display_height = (area.height as f64 * state.zoom).round() as usize;
+        // This function draws the image_buffer to the target buffer
+        // using the state to determine the position and zoom
+        let image_width = self.image_buffer[0].len() as f64;
+        let image_height = self.image_buffer.len() as f64;
 
-        // Calculate the starting point in the image based on the current position
-        let start_x = state.x as usize;
-        let start_y = state.y as usize;
+        // loop over the output pixels and draw the corresponding pixel from the source image
+        for y in 0..area.height {
+            for x in 0..area.width {
+                // calculate the position in the source image
+                //  - take into account state.zoom
+                //  - assume that when state.x/y is 0, the image is displayed in the center
+                let src_x = (x as f64 - state.x) * state.zoom - (area.width as f64 / 2.0)
+                    + image_width / 2.0;
+                let src_y = (y as f64 - state.y) * state.zoom - (area.height as f64 / 2.0)
+                    + image_height / 2.0;
 
-        // Calculate the step size for iterating over the image pixels
-        let step_x = if display_width > 0 { self.image_buffer[0].len() as f64 / display_width as f64 } else { 0.0 };
-        let step_y = if display_height > 0 { self.image_buffer.len() as f64 / display_height as f64 } else { 0.0 };
-
-        for y in 0..area.height as usize {
-            for x in 0..area.width as usize {
-                // Determine the corresponding pixel in the image
-                let image_x = (start_x as f64 + x as f64 * step_x).round() as usize;
-                let image_y = (start_y as f64 + y as f64 * step_y).round() as usize;
-
-                if image_y < self.image_buffer.len() && image_x < self.image_buffer[image_y].len() {
-                    let color = self.image_buffer[image_y][image_x];
-                    let buffer_x = area.left() + x as u16;
-                    let buffer_y = area.top() + y as u16;
-
-                    // Draw the pixel on the buffer
-                    buf.get_mut(buffer_x, buffer_y)
-                        .set_char(' ')
-                        .set_fg(color)
-                        .set_bg(color);
+                // get the color from the source image
+                if src_x >= self.image_buffer[0].len() as f64
+                    || src_y >= self.image_buffer.len() as f64
+                    || src_x < 0.0
+                    || src_y < 0.0
+                {
+                    continue;
                 }
+                let color = self.image_buffer[src_y as usize][src_x as usize];
+
+                // draw the pixel to the target buffer
+                self.draw_pixel(buf, x, y, color);
             }
         }
     }
