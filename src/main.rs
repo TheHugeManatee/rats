@@ -18,6 +18,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use colors::RgbSwatch;
 use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -26,11 +27,11 @@ use crossterm::{
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Stylize},
+    style::Color,
     symbols::Marker,
     terminal::{Frame, Terminal},
     widgets::{
-        canvas::{Canvas, Circle, Map, MapResolution, Rectangle},
+        canvas::{Canvas, Circle, Rectangle},
         Block, Widget,
     },
 };
@@ -38,6 +39,8 @@ use ratatui::{
 fn main() -> io::Result<()> {
     App::run()
 }
+
+mod colors;
 
 struct App {
     x: f64,
@@ -100,16 +103,17 @@ impl App {
 
     fn on_tick(&mut self) {
         self.tick_count += 1;
-        // only change marker every 180 ticks (3s) to avoid stroboscopic effect
-        if (self.tick_count % 180) == 0 {
-            self.marker = match self.marker {
-                Marker::Dot => Marker::Braille,
-                Marker::Braille => Marker::Block,
-                Marker::Block => Marker::HalfBlock,
-                Marker::HalfBlock => Marker::Bar,
-                Marker::Bar => Marker::Dot,
-            };
-        }
+        self.marker = Marker::HalfBlock;
+        // // only change marker every 180 ticks (3s) to avoid stroboscopic effect
+        // if (self.tick_count % 180) == 0 {
+        //     self.marker = match self.marker {
+        //         Marker::Dot => Marker::Braille,
+        //         Marker::Braille => Marker::Block,
+        //         Marker::Block => Marker::HalfBlock,
+        //         Marker::HalfBlock => Marker::Bar,
+        //         Marker::Bar => Marker::Dot,
+        //     };
+        // }
         // bounce the ball by flipping the velocity vector
         let ball = &self.ball;
         let playground = self.playground;
@@ -130,37 +134,30 @@ impl App {
 
     fn ui(&self, frame: &mut Frame) {
         let horizontal =
-            Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
-        let vertical = Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)]);
-        let [map, right] = horizontal.areas(frame.size());
-        let [pong, boxes] = vertical.areas(right);
+            Layout::horizontal([Constraint::Percentage(70), Constraint::Percentage(30)]);
+        //let vertical = Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)]);
+        let [pong, boxes] = horizontal.areas(frame.size());
+        //let [pong, boxes] = vertical.areas(right);
 
-        frame.render_widget(self.map_canvas(), map);
         frame.render_widget(self.pong_canvas(), pong);
-        frame.render_widget(self.boxes_canvas(boxes), boxes);
+        //frame.render_widget(self.boxes_canvas(boxes), boxes);
+        RgbSwatch.render(boxes, frame.buffer_mut())
+        //frame.render_widget(self.image_canvas(), boxes)
     }
-
-    fn map_canvas(&self) -> impl Widget + '_ {
-        Canvas::default()
-            .block(Block::bordered().title("World"))
-            .marker(self.marker)
-            .paint(|ctx| {
-                ctx.draw(&Map {
-                    color: Color::Green,
-                    resolution: MapResolution::High,
-                });
-                ctx.print(self.x, -self.y, "You are here".yellow());
-            })
-            .x_bounds([-180.0, 180.0])
-            .y_bounds([-90.0, 90.0])
-    }
-
+    
     fn pong_canvas(&self) -> impl Widget + '_ {
         Canvas::default()
             .block(Block::bordered().title("Pong"))
             .marker(self.marker)
             .paint(|ctx| {
                 ctx.draw(&self.ball);
+                ctx.draw(&Rectangle {
+                    x: 30.0,
+                    y: 30.0,
+                    width: 10.0,
+                    height: 10.0,
+                    color: Color::Green,
+                });
             })
             .x_bounds([10.0, 210.0])
             .y_bounds([10.0, 110.0])

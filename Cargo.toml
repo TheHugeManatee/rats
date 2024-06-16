@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.27.0"
-ratatui = "0.26.3"
+palette = "0.7.6"
+ratatui = { version = "0.26.3", features = ["all-widgets"] }
