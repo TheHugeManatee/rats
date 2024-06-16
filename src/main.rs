@@ -15,8 +15,8 @@
 
 use std::{
     io::{self, stdout, Stdout},
-    time::{Duration, Instant},
     panic::{set_hook, take_hook},
+    time::{Duration, Instant},
 };
 
 use crossterm::{
@@ -27,14 +27,11 @@ use crossterm::{
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Layout, Rect},
+    prelude::*,
     style::Color,
     symbols::Marker,
     terminal::{Frame, Terminal},
-    widgets::{
-        canvas::{Canvas, Circle, Rectangle},
-        Block, Widget,
-    },
-    prelude::*,
+    widgets::{block::Title, Block, Borders, Gauge, Padding, Paragraph, Widget},
 };
 
 fn main() -> Result<()> {
@@ -61,14 +58,21 @@ use color_eyre::Result;
 struct App {
     x: f64,
     y: f64,
-    ball: Circle,
-    playground: Rect,
-    vx: f64,
-    vy: f64,
     tick_count: u64,
     marker: Marker,
     color_buffer: Vec<Vec<Color>>,
-    display_state: ImageDisplayState
+    display_state: ImageDisplayState,
+    next_line_to_process: usize,
+    progress_percentage: f64,
+}
+
+fn title_block(title: &str) -> Block {
+    let title = Title::from(title).alignment(Alignment::Center);
+    Block::new()
+        .borders(Borders::NONE)
+        .padding(Padding::vertical(1))
+        .title(title)
+        .fg(Color::White)
 }
 
 impl App {
@@ -76,15 +80,6 @@ impl App {
         Self {
             x: 30.0,
             y: 30.0,
-            ball: Circle {
-                x: 20.0,
-                y: 20.0,
-                radius: 10.0,
-                color: Color::Yellow,
-            },
-            playground: Rect::new(10, 10, 200, 100),
-            vx: 1.0,
-            vy: 1.0,
             tick_count: 0,
             marker: Marker::Dot,
             color_buffer: vec![vec![Color::Black; 200]; 100], // TODO: figure out how to update the size of the buffer
@@ -92,7 +87,9 @@ impl App {
                 x: 0.0,
                 y: 0.0,
                 zoom: 1.0,
-            }
+            },
+            next_line_to_process: 0,
+            progress_percentage: 0f64,
         }
     }
 
@@ -123,53 +120,50 @@ impl App {
         Ok(())
     }
 
+    fn render_line(&mut self, line_index: usize) {
+        let mut row = self.color_buffer.get_mut(line_index).unwrap();
+        for (xi, pixel) in row.iter_mut().enumerate() {
+            let l = xi.try_into().unwrap();
+
+            *pixel = Color::Rgb(l, l, l);
+        }
+    }
+
     fn on_tick(&mut self) {
         self.tick_count += 1;
         self.marker = Marker::HalfBlock;
-        // // only change marker every 180 ticks (3s) to avoid stroboscopic effect
-        // if (self.tick_count % 180) == 0 {
 
-        
         // update the color buffer to a grayscale gradient
-        for (_yi, row) in self.color_buffer.iter_mut().enumerate() {
-            for (xi, pixel) in row.iter_mut().enumerate() {
-                let l = xi.try_into().unwrap();
-                
-                *pixel = Color::Rgb(l, l, l);
-            }
+        if self.next_line_to_process < self.color_buffer.len() {
+            self.render_line(self.next_line_to_process);
+            self.next_line_to_process += 1;
+            self.progress_percentage =
+                self.next_line_to_process as f64 / self.color_buffer.len() as f64;
         }
     }
 
     fn ui(&mut self, frame: &mut Frame) {
         let horizontal =
             Layout::horizontal([Constraint::Percentage(70), Constraint::Percentage(30)]);
-        //let vertical = Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)]);
         let [render_area, menu_area] = horizontal.areas(frame.size());
 
-        frame.render_widget(self.pong_canvas(), menu_area);
-        //frame.render_widget(self.boxes_canvas(boxes), boxes);
-        //RgbSwatch.render(boxes, frame.buffer_mut())
-        //frame.render_widget(self.image_canvas(), boxes)
-        
-        frame.render_stateful_widget(ImageDisplay::new(self.color_buffer.clone()), render_area, &mut self.display_state);
+        self.render_side_panel(menu_area, frame.buffer_mut());
+        frame.render_stateful_widget(
+            ImageDisplay::new(self.color_buffer.clone()),
+            render_area,
+            &mut self.display_state,
+        );
     }
-    
-    fn pong_canvas(&self) -> impl Widget + '_ {
-        Canvas::default()
-            .block(Block::bordered().title("Pong"))
-            .marker(self.marker)
-            .paint(|ctx| {
-                ctx.draw(&self.ball);
-                ctx.draw(&Rectangle {
-                    x: self.x ,
-                    y: self.y,
-                    width: 10.0,
-                    height: 10.0,
-                    color: Color::Green,
-                });
-            })
-            .x_bounds([10.0, 210.0])
-            .y_bounds([10.0, 110.0])
+
+    fn render_side_panel(&self, area: Rect, buf: &mut Buffer) {
+        let title = title_block("Progress");
+        let label = format!("{:.1}%", self.progress_percentage * 100.0);
+        Gauge::default()
+            .block(title)
+            .gauge_style(Color::Green)
+            .ratio(self.progress_percentage)
+            .label(label)
+            .render(area, buf);
     }
 }
 
