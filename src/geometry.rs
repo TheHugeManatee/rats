@@ -30,7 +30,7 @@ impl HitRecord {
 pub trait Hittable {
     // The hit method is used to determine if a ray hits the object
     // and if it does, it returns a HitRecord
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord>;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -66,7 +66,7 @@ impl Sphere {
 
 impl Hittable for Sphere {
     // returns the closest hit t for the ray
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
         let oc = self.center - ray.origin;
         let a = ray.direction.length_squared();
         let h = Vec3::dot(ray.direction, oc);
@@ -78,13 +78,18 @@ impl Hittable for Sphere {
             return None;
         }
 
-        let t = (h - discriminant.sqrt()) / a;
-
-        if t < t_max && t >= t_min {
-            let point = ray.at(t);
-            let normal = self.hit_normal(point);
-            return Some(HitRecord::new(point, normal, t, ray));
+        let sqrtd = discriminant.sqrt();
+        let mut root = (h - sqrtd) / a;
+        if !interval.surrounds(root) {
+            root = (h + sqrtd) / a;
         }
-        None
+        if !interval.surrounds(root) {
+            return None;
+        }
+
+        let point = ray.at(root);
+        let normal = self.hit_normal(point);
+
+        Some(HitRecord::new(point, normal, root, ray))
     }
 }

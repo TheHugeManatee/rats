@@ -101,7 +101,7 @@ impl Renderer {
     }
 
     fn ray_color(world: &HittableList, ray: Ray) -> Color {
-        match world.hit(&ray, 0.0, f64::INFINITY) {
+        match world.hit(&ray, &Interval::new(0.0, f64::INFINITY)) {
             Some(hit) => {
                 let normal = hit.normal;
                 (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).to_color()

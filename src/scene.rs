@@ -35,10 +35,10 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
         self.objects
             .iter()
-            .filter_map(|object| object.hit(ray, t_min, t_max))
+            .filter_map(|object| object.hit(ray, interval))
             .fold(None, |acc, record| match acc {
                 Some(acc_record) if acc_record.t < record.t => Some(acc_record),
                 _ => Some(record),
