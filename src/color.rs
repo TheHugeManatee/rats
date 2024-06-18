@@ -1,7 +1,7 @@
-use crate::maths::vec3;
+use crate::maths::Vec3;
 
 type Color = ratatui::prelude::Color;
-type color = crate::maths::vec3;
+type color = crate::maths::Vec3;
 
 #[allow(dead_code)]
 impl color {

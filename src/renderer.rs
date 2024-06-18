@@ -1,11 +1,11 @@
 use crate::color::*;
 use crate::geometry::{Ray, Sphere};
-use crate::maths::{vec2, vec3};
+use crate::maths::{Vec2, Vec3};
 use ratatui::prelude::Color;
 
 pub struct Camera {
     pub focal_length: f64,
-    pub origin: vec3,
+    pub origin: Vec3,
 }
 
 pub struct Renderer {
@@ -13,9 +13,9 @@ pub struct Renderer {
     color_buffer: Vec<Vec<Color>>,
     next_line_to_process: usize,
     camera: Camera,
-    pixel00_loc: vec3,
-    pixel_delta_u: vec3,
-    pixel_delta_v: vec3,
+    pixel00_loc: Vec3,
+    pixel_delta_u: Vec3,
+    pixel_delta_v: Vec3,
 }
 
 impl Renderer {
@@ -31,11 +31,11 @@ impl Renderer {
         let pixel_aspect_ratio = 10.0 / 20.0;
         // camera parameters and vectors across full viewport
         let focal_length = 1.0;
-        let camera_center = vec3::zero();
+        let camera_center = Vec3::zero();
         let viewport_height = 2.0;
         let viewport_width = viewport_height * width as f64 / height as f64;
-        let viewport_u = vec3::new(viewport_width, 0.0, 0.0) * pixel_aspect_ratio;
-        let viewport_v = vec3::new(0.0, -viewport_height, 0.0);
+        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0) * pixel_aspect_ratio;
+        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
 
         // horizontal and vertical delta vectors
         let pixel_delta_u = viewport_u / width as f64;
@@ -43,7 +43,7 @@ impl Renderer {
 
         // location of the upper left pixel
         let viewport_upper_left =
-            camera_center - vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            camera_center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel00_loc = viewport_upper_left + pixel_delta_u / 2.0 + pixel_delta_v / 2.0;
 
         Renderer {
@@ -99,13 +99,21 @@ impl Renderer {
 
     fn ray_color(ray: Ray) -> Color {
         // hit sphere
-        if Sphere::hit(vec3::new(0.0, 0.0, -1.0), 0.5, &ray) {
-            return vec3::new(1.0, 0.0, 0.0).to_color();
+        match Sphere::hit(Vec3::new(0.0, 0.0, -1.0), 0.5, &ray) {
+            Some(t) => {
+                let point_on_surface = ray.at(t);
+                let normal = Sphere::hit_normal(
+                    &Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5),
+                    point_on_surface,
+                );
+                (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).to_color()
+            }
+            None => {
+                // background: lerp from white to blue
+                let unit_direction = ray.direction.normalized();
+                let a = 0.5 * (unit_direction.y + 1.0);
+                Vec3::lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), a).to_color()
+            }
         }
-
-        // background: lerp from white to blue
-        let unit_direction = ray.direction.normalized();
-        let a = 0.5 * (unit_direction.y + 1.0);
-        vec3::lerp(vec3::new(1.0, 1.0, 1.0), vec3::new(0.5, 0.7, 1.0), a).to_color()
     }
 }
