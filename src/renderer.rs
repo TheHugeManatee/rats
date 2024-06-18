@@ -1,5 +1,5 @@
 use crate::color::*;
-use crate::geometry::{Ray, Sphere};
+use crate::geometry::{Hittable, Ray, Sphere};
 use crate::maths::{Vec2, Vec3};
 use ratatui::prelude::Color;
 
@@ -99,13 +99,13 @@ impl Renderer {
 
     fn ray_color(ray: Ray) -> Color {
         // hit sphere
-        match Sphere::hit(Vec3::new(0.0, 0.0, -1.0), 0.5, &ray) {
-            Some(t) => {
-                let point_on_surface = ray.at(t);
-                let normal = Sphere::hit_normal(
-                    &Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5),
-                    point_on_surface,
-                );
+        let sphere = Sphere {
+            center: Vec3::new(0.0, 0.0, -1.0),
+            radius: 0.5,
+        };
+        match sphere.hit(&ray, f64::NEG_INFINITY, f64::INFINITY) {
+            Some(hit) => {
+                let normal = hit.normal;
                 (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).to_color()
             }
             None => {
