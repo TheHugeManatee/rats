@@ -28,12 +28,13 @@ impl Renderer {
     pub fn new(width: usize, height: usize) -> Renderer {
         let color_buffer = vec![vec![Color::default(); width]; height];
 
+        let pixel_aspect_ratio = 10.0 / 20.0;
         // camera parameters and vectors across full viewport
         let focal_length = 1.0;
         let camera_center = vec3::zero();
         let viewport_height = 2.0;
         let viewport_width = viewport_height * width as f64 / height as f64;
-        let viewport_u = vec3::new(viewport_width, 0.0, 0.0);
+        let viewport_u = vec3::new(viewport_width, 0.0, 0.0) * pixel_aspect_ratio;
         let viewport_v = vec3::new(0.0, -viewport_height, 0.0);
 
         // horizontal and vertical delta vectors
