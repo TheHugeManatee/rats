@@ -130,17 +130,32 @@ impl App {
             &mut self.display_state,
         );
     }
-
+    // Updated function based on the comments
     fn render_side_panel(&self, area: Rect, buf: &mut Buffer) {
-        let title = title_block("Progress");
+        // Calculate and display the rendering resolution
+        let resolution = format!(
+            "Resolution: {}x{}",
+            self.renderer.width(),
+            self.renderer.height()
+        );
+        buf.set_string(area.left(), area.top() + 1, resolution, Style::default());
+
+        // Display the number of objects in the scene
+        let objects_count = format!("Objects: {}", self.renderer.get_scene_object_count());
+        buf.set_string(area.left(), area.top() + 2, objects_count, Style::default());
+
+        // Calculate and display the current progress gauge
         let progress = self.renderer.get_progress_percentage();
         let label = format!("{:.1}%", progress * 100.0);
+
+        //let title = "Progress".to_string();
+        //buf.set_string(area.left(), area.top(), title, Style::default());
         Gauge::default()
-            .block(title)
-            .gauge_style(Color::Green)
+            .block(title_block("Progress"))
+            .gauge_style(Style::default().fg(Color::Green))
             .ratio(progress)
             .label(label)
-            .render(area, buf);
+            .render(Rect::new(area.left(), area.top() + 4, area.width, 4), buf);
     }
 }
 

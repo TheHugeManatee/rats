@@ -32,6 +32,9 @@ impl HittableList {
     pub fn clear(&mut self) {
         self.objects.clear();
     }
+    pub fn object_count(&self) -> usize {
+        self.objects.len()
+    }
 }
 
 impl Hittable for HittableList {

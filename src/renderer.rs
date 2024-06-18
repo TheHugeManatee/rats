@@ -69,8 +69,19 @@ impl Renderer {
         self.next_line_to_process as f64 / height as f64
     }
 
+    pub fn width(&self) -> usize {
+        self.dimensions.0
+    }
+    pub fn height(&self) -> usize {
+        self.dimensions.1
+    }
+
     pub fn get_color_buffer(&self) -> &Vec<Vec<Color>> {
         &self.color_buffer
+    }
+
+    pub fn get_scene_object_count(&self) -> usize {
+        self.world.object_count()
     }
 
     pub fn render_step(&mut self) {
