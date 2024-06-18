@@ -206,6 +206,19 @@ impl std::ops::Div<f64> for Vec3 {
     }
 }
 
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - n * 2.0 * Vec3::dot(v, n)
+}
+
+pub fn degrees_to_radians(degrees: f64) -> f64 {
+    degrees * std::f64::consts::PI / 180.0
+}
+pub fn radians_to_degrees(radians: f64) -> f64 {
+    radians * 180.0 / std::f64::consts::PI
+}
+
+pub type Point = Vec3;
+
 #[cfg(test)]
 mod tests {
     use super::*;

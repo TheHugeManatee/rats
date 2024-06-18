@@ -47,6 +47,7 @@ mod color;
 mod geometry;
 mod maths;
 mod renderer;
+mod scene;
 use buffer_display::{ImageDisplay, ImageDisplayState};
 use color_eyre::Result;
 use renderer::Renderer;

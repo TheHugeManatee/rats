@@ -1,7 +1,7 @@
-use crate::maths::Vec3;
+use crate::maths::*;
 
 pub struct HitRecord {
-    pub point: Vec3,
+    pub point: Point,
     pub normal: Vec3, // normal of the hit point, always points against the ray
     pub t: f64,
     pub front_face: bool,
@@ -9,7 +9,7 @@ pub struct HitRecord {
 
 impl HitRecord {
     // the normal given on construction is expected to point outward from the surface
-    pub fn new(point: Vec3, outward_normal: Vec3, t: f64, ray: &Ray) -> Self {
+    pub fn new(point: Point, outward_normal: Vec3, t: f64, ray: &Ray) -> Self {
         let front_face = Vec3::dot(ray.direction, outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
@@ -35,12 +35,12 @@ pub trait Hittable {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
-    pub origin: Vec3,
+    pub origin: Point,
     pub direction: Vec3,
 }
 
 impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) -> Self {
+    pub fn new(origin: Point, direction: Vec3) -> Self {
         Self { origin, direction }
     }
 
@@ -56,10 +56,10 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Self {
+    pub fn new(center: Point, radius: f64) -> Self {
         Self { center, radius }
     }
-    pub fn hit_normal(&self, point_on_surface: Vec3) -> Vec3 {
+    pub fn hit_normal(&self, point_on_surface: Point) -> Vec3 {
         (point_on_surface - self.center).normalized()
     }
 }

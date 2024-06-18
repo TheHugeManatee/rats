@@ -1,6 +1,7 @@
 use crate::color::*;
-use crate::geometry::{Hittable, Ray, Sphere};
-use crate::maths::{Vec2, Vec3};
+use crate::geometry::*;
+use crate::maths::*;
+use crate::scene::HittableList;
 use ratatui::prelude::Color;
 
 pub struct Camera {
@@ -16,6 +17,7 @@ pub struct Renderer {
     pixel00_loc: Vec3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    world: HittableList,
 }
 
 impl Renderer {
@@ -57,6 +59,7 @@ impl Renderer {
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
+            world: HittableList::default(),
         }
     }
 
@@ -93,17 +96,12 @@ impl Renderer {
             // direction is intentionally not normalized
             let ray = Ray::new(self.camera.origin, pixel_center - self.camera.origin);
 
-            *pixel = Self::ray_color(ray);
+            *pixel = Self::ray_color(&self.world, ray);
         }
     }
 
-    fn ray_color(ray: Ray) -> Color {
-        // hit sphere
-        let sphere = Sphere {
-            center: Vec3::new(0.0, 0.0, -1.0),
-            radius: 0.5,
-        };
-        match sphere.hit(&ray, f64::NEG_INFINITY, f64::INFINITY) {
+    fn ray_color(world: &HittableList, ray: Ray) -> Color {
+        match world.hit(&ray, 0.0, f64::INFINITY) {
             Some(hit) => {
                 let normal = hit.normal;
                 (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).to_color()
