@@ -1,4 +1,3 @@
-use crate::color::*;
 use crate::geometry::*;
 use crate::maths::*;
 use crate::scene::HittableList;

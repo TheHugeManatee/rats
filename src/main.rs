@@ -4,6 +4,9 @@
 //!
 //! [Ratatui]: https://github.com/ratatui-org/ratatui
 
+// for a lib in progress, dead code is useless
+#![allow(dead_code)]
+
 use std::{
     io::{self, stdout, Stdout},
     panic::{set_hook, take_hook},
