@@ -142,15 +142,32 @@ impl Renderer {
         world: &HittableList,
         max_depth: i32,
     ) -> TerminalPixel {
-        let mut pixel_color = Color::default();
-        for _ in 0..samples_per_pixel {
-            let offset = Renderer::sample_square();
+        let mut pixel = RenderPixel::default();
 
-            let ray = camera.get_pixel_ray(x + offset.x, y + offset.y);
-            pixel_color += camera.ray_color(&ray, max_depth, world) * sample_scale;
+        let subpixels_per_pixel = SUBPIXEL_X * SUBPIXEL_Y;
+        let subpixel_size = Vec3::new(1.0 / SUBPIXEL_X as f64, 1.0 / SUBPIXEL_Y as f64, 0.0);
+        let subpixel_sample_scale = sample_scale * subpixels_per_pixel as f64;
+
+        for _ in 0..samples_per_pixel / subpixels_per_pixel {
+            for subpixel_y in 0..SUBPIXEL_Y {
+                for subpixel_x in 0..SUBPIXEL_X {
+                    let subpixel_index = subpixel_x * SUBPIXEL_X + subpixel_y;
+
+                    //let offset = Vec3::new(subpixel_x as f64, subpixel_y as f64, 0.0)
+                    //    + Renderer::sample_square() * subpixel_size;
+                    //let offset = Vec3::default();
+                    let offset =
+                        Vec3::new(subpixel_x as f64, subpixel_y as f64, 0.0) * subpixel_size;
+                    let ray = camera.get_pixel_ray(x + offset.x, y + offset.y);
+
+                    let mut subpx_color = pixel.get_color(subpixel_x, subpixel_y);
+                    subpx_color += camera.ray_color(&ray, max_depth, world) * subpixel_sample_scale;
+                    pixel.set_color(subpixel_x, subpixel_y, subpx_color);
+                }
+            }
         }
-
-        TerminalPixel::new(pixel_color, pixel_color, ' ')
+        let col = pixel.average_color();
+        TerminalPixel::new(col, col, ' ')
     }
 
     fn sample_square() -> Vec3 {

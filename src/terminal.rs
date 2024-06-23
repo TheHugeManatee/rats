@@ -24,19 +24,52 @@ impl Default for TerminalPixel {
     }
 }
 
-pub struct SubPixel {
-    pub offset: Vec3,
-    pub size: Vec3,
+// pub struct SubPixel {
+//     pub offset: Vec3,
+//     pub size: Vec3,
+// }
+
+// pub struct SubpixelPattern<'a> {
+//     pub subpixels: &'a Vec<SubPixel>,
+// }
+
+// // To improve rendering of the pixel beyond using a full block, we subdivide
+// // a raytraced pixel into subpixels and try to map the subpixel pattern onto
+// // a character that best represents the subpixel pattern.
+// pub struct RenderPixel<'a> {
+//     pub subpixel_pattern: &'a SubpixelPattern<'a>,
+//     pub colors: Vec<Color>,
+// }
+
+pub const SUBPIXEL_X: usize = 2;
+pub const SUBPIXEL_Y: usize = 4;
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct RenderPixel {
+    colors: [[Color; SUBPIXEL_X]; SUBPIXEL_Y],
 }
 
-pub struct SubpixelPattern<'a> {
-    pub subpixels: &'a Vec<SubPixel>,
-}
+impl RenderPixel {
+    pub fn new() -> Self {
+        Self {
+            colors: [[Color::default(); SUBPIXEL_X]; SUBPIXEL_Y],
+        }
+    }
 
-// To improve rendering of the pixel beyond using a full block, we subdivide
-// a raytraced pixel into subpixels and try to map the subpixel pattern onto
-// a character that best represents the subpixel pattern.
-pub struct RenderPixel<'a> {
-    pub subpixel_pattern: &'a SubpixelPattern<'a>,
-    pub colors: Vec<Color>,
+    pub fn get_color(&self, x: usize, y: usize) -> Color {
+        self.colors[y][x]
+    }
+    pub fn set_color(&mut self, x: usize, y: usize, color: Color) {
+        self.colors[y][x] = color;
+    }
+
+    pub fn average_color(&self) -> Color {
+        let mut color = Color::default();
+        for row in self.colors.iter() {
+            for c in row.iter() {
+                color += *c;
+            }
+        }
+        color / (SUBPIXEL_X * SUBPIXEL_Y) as f64
+    }
 }
