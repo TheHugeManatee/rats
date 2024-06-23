@@ -1,5 +1,8 @@
+use crate::color::Color;
 use crate::geometry::*;
-use crate::maths::*;
+use crate::materials::{Lambertian, Metal};
+use crate::maths::{Interval, Point};
+use std::rc::Rc;
 
 pub struct HittableList {
     objects: Vec<Box<dyn Hittable>>,
@@ -14,14 +17,33 @@ impl HittableList {
 
     pub fn default() -> Self {
         let mut world = Self::new();
-        world.add(Box::new(Sphere {
-            center: Vec3::new(0.0, 0.0, -1.0),
-            radius: 0.5,
-        }));
-        world.add(Box::new(Sphere {
-            center: Vec3::new(0.0, -100.5, -1.0),
-            radius: 100.0,
-        }));
+
+        let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+        let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+        let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+        let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+
+        world.add(Box::new(Sphere::new(
+            Point::new(0.0, -100.5, -1.0),
+            100.0,
+            material_ground,
+        )));
+        world.add(Box::new(Sphere::new(
+            Point::new(0.0, 0.0, -1.2),
+            0.5,
+            material_center,
+        )));
+        world.add(Box::new(Sphere::new(
+            Point::new(-1.0, 0.0, -1.0),
+            0.5,
+            material_left,
+        )));
+        world.add(Box::new(Sphere::new(
+            Point::new(1.0, 0.0, -1.0),
+            0.5,
+            material_right,
+        )));
+
         world
     }
 

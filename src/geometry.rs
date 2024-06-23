@@ -1,15 +1,25 @@
+use crate::materials::*;
+
 use crate::maths::*;
+use std::rc::Rc;
 
 pub struct HitRecord {
     pub point: Point,
     pub normal: Vec3, // normal of the hit point, always points against the ray
     pub t: f64,
     pub front_face: bool,
+    pub material: Rc<dyn Material>,
 }
 
 impl HitRecord {
     // the normal given on construction is expected to point outward from the surface
-    pub fn new(point: Point, outward_normal: Vec3, t: f64, ray: &Ray) -> Self {
+    pub fn new(
+        point: Point,
+        outward_normal: Vec3,
+        t: f64,
+        ray: &Ray,
+        material: Rc<dyn Material>,
+    ) -> Self {
         let front_face = ray.direction.dot(outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
@@ -22,6 +32,7 @@ impl HitRecord {
             normal,
             t,
             front_face,
+            material,
         }
     }
 }
@@ -49,15 +60,20 @@ impl Ray {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+    pub material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point, radius: f64, material: Rc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
     pub fn hit_normal(&self, point_on_surface: Point) -> Vec3 {
         (point_on_surface - self.center).normalized()
@@ -90,6 +106,12 @@ impl Hittable for Sphere {
         let point = ray.at(root);
         let normal = self.hit_normal(point);
 
-        Some(HitRecord::new(point, normal, root, ray))
+        Some(HitRecord::new(
+            point,
+            normal,
+            root,
+            ray,
+            Rc::clone(&self.material),
+        ))
     }
 }

@@ -62,13 +62,12 @@ impl Camera {
             return Color::default();
         }
         match world.hit(&ray, &Interval::new(min_t, f64::INFINITY)) {
-            Some(hit) => {
-                // recursively trace diffusely reflected ray
-                //let direction = random_vec3_on_hemisphere(hit.normal);
-                let direction = hit.normal + random_vec3_unit();
-                self.ray_color(&Ray::new(hit.point, direction), depth - 1, world) * 0.5
-                //Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5
-            }
+            Some(hit) => match hit.material.scatter(&ray, &hit) {
+                Some(scatter) => {
+                    scatter.attenuation * self.ray_color(&scatter.scattered_ray, depth - 1, world)
+                }
+                None => Color::default(),
+            },
             None => {
                 // background: lerp from white to blue
                 let unit_direction = ray.direction.normalized();

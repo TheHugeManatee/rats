@@ -118,6 +118,7 @@ impl Renderer {
             let y: f64 = line_index as f64;
             let mut pixel_color = Color::default();
             let sample_scale = 1.0 / self.samples_per_pixel as f64;
+
             for _ in 0..self.samples_per_pixel {
                 let offset = Renderer::sample_square();
 
@@ -125,6 +126,8 @@ impl Renderer {
                 pixel_color +=
                     self.camera.ray_color(&ray, self.max_depth, &self.world) * sample_scale;
             }
+            // note: no gamma correction needed for now because we directly display without
+            // saving to a gamma file format
             *pixel = pixel_color;
         }
     }

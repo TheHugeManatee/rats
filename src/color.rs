@@ -21,4 +21,12 @@ impl Color {
             z: self.z.clamp(0.0, 1.0),
         }
     }
+
+    pub fn gamma_correction(color: &Color) -> Color {
+        Color {
+            x: color.x.sqrt(),
+            y: color.y.sqrt(),
+            z: color.z.sqrt(),
+        }
+    }
 }

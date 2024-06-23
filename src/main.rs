@@ -49,6 +49,7 @@ mod buffer_display;
 mod camera;
 mod color;
 mod geometry;
+mod materials;
 mod maths;
 mod random;
 mod renderer;
@@ -78,7 +79,7 @@ impl App {
         Self {
             tick_count: 0,
             marker: Marker::Dot,
-            renderer: Renderer::new(128, 64),
+            renderer: Renderer::new(192, 96),
             display_state: ImageDisplayState {
                 x: 0.0,
                 y: 0.0,
