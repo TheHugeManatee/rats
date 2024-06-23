@@ -57,3 +57,32 @@ impl Material for Metal {
         })
     }
 }
+
+pub struct Dielectric {
+    refraction_index: f64,
+}
+
+impl Dielectric {
+    pub fn new(refraction_index: f64) -> Self {
+        Self { refraction_index }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
+        let attenuation = Color::new(1.0, 1.0, 1.0);
+        let ri = if hit_record.front_face {
+            1.0 / self.refraction_index
+        } else {
+            self.refraction_index
+        };
+
+        let unit_direction = ray.direction.normalized();
+        let refracted = crate::maths::refract(unit_direction, hit_record.normal, ri);
+
+        Some(ScatterRecord {
+            attenuation,
+            scattered_ray: Ray::new(hit_record.point, refracted),
+        })
+    }
+}

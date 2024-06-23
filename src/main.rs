@@ -25,7 +25,7 @@ use ratatui::{
     style::Color,
     symbols::Marker,
     terminal::{Frame, Terminal},
-    widgets::{block::Title, Block, Borders, Gauge, Padding, Widget},
+    widgets::{block::Title, Block, Borders, Gauge, Padding, Row, Table, Widget},
 };
 
 fn main() -> Result<()> {
@@ -63,6 +63,7 @@ struct App {
     marker: Marker,
     renderer: Renderer,
     display_state: ImageDisplayState,
+    show_side_panel: bool,
 }
 
 fn title_block(title: &str) -> Block {
@@ -79,12 +80,13 @@ impl App {
         Self {
             tick_count: 0,
             marker: Marker::Dot,
-            renderer: Renderer::new(192, 96),
+            renderer: Renderer::new(192, 72),
             display_state: ImageDisplayState {
                 x: 0.0,
                 y: 0.0,
                 zoom: 1.0,
             },
+            show_side_panel: true,
         }
     }
 
@@ -98,6 +100,7 @@ impl App {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
                         KeyCode::Char('q') => break,
+                        KeyCode::Char(' ') => self.show_side_panel = !self.show_side_panel,
                         KeyCode::Char('j') => self.display_state.zoom += 0.1,
                         KeyCode::Char('k') => self.display_state.zoom -= 0.1,
                         KeyCode::Right => self.display_state.x += 1.0,
@@ -125,8 +128,17 @@ impl App {
     }
 
     fn ui(&mut self, frame: &mut Frame) {
+        if !self.show_side_panel {
+            frame.render_stateful_widget(
+                ImageDisplay::new(self.renderer.get_color_buffer()),
+                frame.size(),
+                &mut self.display_state,
+            );
+            return;
+        }
+
         let horizontal =
-            Layout::horizontal([Constraint::Percentage(70), Constraint::Percentage(30)]);
+            Layout::horizontal([Constraint::Percentage(80), Constraint::Percentage(20)]);
         let [render_area, menu_area] = horizontal.areas(frame.size());
 
         self.render_side_panel(menu_area, frame.buffer_mut());
@@ -140,25 +152,27 @@ impl App {
     fn render_side_panel(&self, area: Rect, buf: &mut Buffer) {
         // Calculate and display the rendering resolution
         let resolution = format!(
-            "Resolution: {}x{}",
+            "{}x{}",
             self.renderer.get_color_buffer().width,
             self.renderer.get_color_buffer().height
         );
-        buf.set_string(area.left(), area.top() + 1, resolution, Style::default());
+        let objects_count = format!("{}", self.renderer.get_scene_object_count());
+        let render_duration = format!("{:.2?}", self.renderer.get_render_duration());
 
-        // Display the number of objects in the scene
-        let objects_count = format!("Objects: {}", self.renderer.get_scene_object_count());
-        buf.set_string(area.left(), area.top() + 2, objects_count, Style::default());
-
-        let render_duration = format!(
-            "Render duration: {:.2?}",
-            self.renderer.get_render_duration()
-        );
-        buf.set_string(
-            area.left(),
-            area.top() + 3,
-            render_duration,
-            Style::default(),
+        // Create a table widget
+        let widths = [
+            Constraint::Length(area.width / 2),
+            Constraint::Length(area.width / 2),
+        ];
+        let rows = [
+            Row::new(vec!["Resolution", &resolution]),
+            Row::new(vec!["Objects", &objects_count]),
+            Row::new(vec!["Render Duration", &render_duration]),
+        ];
+        Widget::render(
+            Table::new(rows, widths).header(Row::new(vec!["Metric", "Value"])),
+            area,
+            buf,
         );
 
         // Calculate and display the current progress gauge
@@ -172,7 +186,10 @@ impl App {
             .gauge_style(Style::default().fg(Color::Green))
             .ratio(progress)
             .label(label)
-            .render(Rect::new(area.left(), area.top() + 4, area.width, 4), buf);
+            .render(
+                Rect::new(area.left(), area.bottom() - 4, area.width, 4),
+                buf,
+            );
     }
 }
 
