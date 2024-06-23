@@ -50,6 +50,7 @@ mod camera;
 mod color;
 mod geometry;
 mod maths;
+mod random;
 mod renderer;
 mod scene;
 use buffer_display::{ImageDisplay, ImageDisplayState};
@@ -129,7 +130,7 @@ impl App {
 
         self.render_side_panel(menu_area, frame.buffer_mut());
         frame.render_stateful_widget(
-            ImageDisplay::new(self.renderer.get_color_buffer().clone()),
+            ImageDisplay::new(self.renderer.get_color_buffer()),
             render_area,
             &mut self.display_state,
         );
@@ -139,8 +140,8 @@ impl App {
         // Calculate and display the rendering resolution
         let resolution = format!(
             "Resolution: {}x{}",
-            self.renderer.width(),
-            self.renderer.height()
+            self.renderer.get_color_buffer().width,
+            self.renderer.get_color_buffer().height
         );
         buf.set_string(area.left(), area.top() + 1, resolution, Style::default());
 

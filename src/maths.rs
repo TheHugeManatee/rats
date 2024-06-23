@@ -153,6 +153,12 @@ impl std::ops::Add for Vec3 {
         Self::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
+impl std::ops::AddAssign for Vec3 {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self::new(self.x + other.x, self.y + other.y, self.z + other.z);
+    }
+}
+
 // implement the Add trait for scalar addition
 impl std::ops::Add<f64> for Vec3 {
     type Output = Self;
@@ -248,6 +254,10 @@ impl Interval {
     }
     pub fn surrounds(&self, value: f64) -> bool {
         value > self.min && value < self.max
+    }
+
+    pub fn clamp(&self, value: f64) -> f64 {
+        value.max(self.min).min(self.max)
     }
 }
 

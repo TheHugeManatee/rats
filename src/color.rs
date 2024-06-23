@@ -1,12 +1,16 @@
+use crate::maths::Interval;
 pub type Color = crate::maths::Vec3;
 
-#[allow(dead_code)]
 impl Color {
     pub fn to_color(&self) -> ratatui::prelude::Color {
+        let intensity = Interval {
+            min: 0.0,
+            max: 0.999,
+        };
         ratatui::prelude::Color::Rgb(
-            (self.x * 255.99) as u8,
-            (self.y * 255.99) as u8,
-            (self.z * 255.99) as u8,
+            (256.0 * intensity.clamp(self.x)) as u8,
+            (256.0 * intensity.clamp(self.y)) as u8,
+            (256.0 * intensity.clamp(self.z)) as u8,
         )
     }
 

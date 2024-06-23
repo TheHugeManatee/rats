@@ -8,3 +8,4 @@ color-eyre = "0.6.3"
 crossterm = "0.27.0"
 palette = "0.7.6"
 ratatui = { version = "0.26.3", features = ["all-widgets"] }
+rand = "0.8.5"

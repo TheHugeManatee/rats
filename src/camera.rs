@@ -3,17 +3,16 @@ use crate::geometry::*;
 use crate::maths::*;
 use crate::scene::*;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Camera {
-    pub pixel_width: f64,
-    pub pixel_height: f64,
-    pub focal_length: f64,
-    pub origin: Vec3,
+    pixel_width: f64,
+    pixel_height: f64,
+    focal_length: f64,
+    origin: Vec3,
     pixel00_loc: Vec3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
 }
-
-pub struct Viewport {}
 
 impl Camera {
     pub fn new(
@@ -47,6 +46,7 @@ impl Camera {
         }
     }
 
+    // takes fractional pixel positions x and y
     pub fn get_pixel_ray(&self, x: f64, y: f64) -> Ray {
         let pixel_center = self.pixel00_loc + self.pixel_delta_u * x + self.pixel_delta_v * y;
 
