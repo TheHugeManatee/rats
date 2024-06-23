@@ -66,6 +66,10 @@ impl Dielectric {
     pub fn new(refraction_index: f64) -> Self {
         Self { refraction_index }
     }
+    pub fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
+        let r0 = ((1.0 - refraction_index) / (1.0 + refraction_index)).powi(2);
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
 }
 
 impl Material for Dielectric {
@@ -78,11 +82,22 @@ impl Material for Dielectric {
         };
 
         let unit_direction = ray.direction.normalized();
-        let refracted = crate::maths::refract(unit_direction, hit_record.normal, ri);
+
+        let cos_theta = (-unit_direction).dot(hit_record.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = ri * sin_theta > 1.0;
+        let direction = if cannot_refract
+            || Self::reflectance(cos_theta, ri) > crate::random::random_double()
+        {
+            unit_direction.reflect(hit_record.normal)
+        } else {
+            crate::maths::refract(unit_direction, hit_record.normal, ri)
+        };
 
         Some(ScatterRecord {
             attenuation,
-            scattered_ray: Ray::new(hit_record.point, refracted),
+            scattered_ray: Ray::new(hit_record.point, direction),
         })
     }
 }
