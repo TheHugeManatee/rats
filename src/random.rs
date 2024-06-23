@@ -1,5 +1,5 @@
 use crate::maths::Vec3;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use rand_distr::StandardNormal;
 
 pub fn random_double() -> f64 {

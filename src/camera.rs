@@ -56,12 +56,16 @@ impl Camera {
         Ray::new(self.origin, pixel_center - self.origin)
     }
 
-    pub fn ray_color(&self, ray: &Ray, world: &HittableList) -> Color {
-        match world.hit(&ray, &Interval::new(0.0, f64::INFINITY)) {
+    pub fn ray_color(&self, ray: &Ray, depth: i32, world: &HittableList) -> Color {
+        let min_t = 0.0001; // minimum t to avoid self-intersection
+        if depth <= 0 {
+            return Color::default();
+        }
+        match world.hit(&ray, &Interval::new(min_t, f64::INFINITY)) {
             Some(hit) => {
                 // recursively trace diffusely reflected ray
                 let direction = random_vec3_on_hemisphere(hit.normal);
-                self.ray_color(&Ray::new(hit.point, direction), world) * 0.5
+                self.ray_color(&Ray::new(hit.point, direction), depth - 1, world) * 0.5
                 //Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5
             }
             None => {

@@ -9,8 +9,8 @@ pub struct Renderer {
     next_line_to_process: usize,
     render_duration: std::time::Duration,
     camera: Camera,
-    samples_per_pixel: usize,
-
+    samples_per_pixel: usize, // Count of random samples for each pixel
+    max_depth: i32,           // Maximum number of ray bounces into scene
     world: HittableList,
 }
 
@@ -71,6 +71,7 @@ impl Renderer {
                 camera_center,
             ),
             samples_per_pixel: 300,
+            max_depth: 10,
             world: HittableList::default(),
         }
     }
@@ -121,7 +122,8 @@ impl Renderer {
                 let offset = Renderer::sample_square();
 
                 let ray = self.camera.get_pixel_ray(x + offset.x, y + offset.y);
-                pixel_color += self.camera.ray_color(&ray, &self.world) * sample_scale;
+                pixel_color +=
+                    self.camera.ray_color(&ray, self.max_depth, &self.world) * sample_scale;
             }
             *pixel = pixel_color;
         }
