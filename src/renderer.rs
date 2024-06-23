@@ -1,3 +1,4 @@
+use crate::camera;
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::maths::*;
@@ -70,7 +71,7 @@ impl Renderer {
                 focal_length,
                 camera_center,
             ),
-            samples_per_pixel: 500,
+            samples_per_pixel: 512,
             max_depth: 10,
             world: HittableList::default(),
         }
@@ -116,20 +117,40 @@ impl Renderer {
         for (xi, pixel) in row.iter_mut().enumerate() {
             let x: f64 = xi as f64;
             let y: f64 = line_index as f64;
-            let mut pixel_color = Color::default();
             let sample_scale = 1.0 / self.samples_per_pixel as f64;
 
-            for _ in 0..self.samples_per_pixel {
-                let offset = Renderer::sample_square();
-
-                let ray = self.camera.get_pixel_ray(x + offset.x, y + offset.y);
-                pixel_color +=
-                    self.camera.ray_color(&ray, self.max_depth, &self.world) * sample_scale;
-            }
             // note: no gamma correction needed for now because we directly display without
             // saving to a gamma file format
-            *pixel = pixel_color;
+            *pixel = Renderer::render_pixel_samples(
+                self.samples_per_pixel,
+                x,
+                y,
+                sample_scale,
+                &self.camera,
+                &self.world,
+                self.max_depth,
+            );
         }
+    }
+
+    fn render_pixel_samples(
+        samples_per_pixel: usize,
+        x: f64,
+        y: f64,
+        sample_scale: f64,
+        camera: &Camera,
+        world: &HittableList,
+        max_depth: i32,
+    ) -> Color {
+        let mut pixel_color = Color::default();
+        for _ in 0..samples_per_pixel {
+            let offset = Renderer::sample_square();
+
+            let ray = camera.get_pixel_ray(x + offset.x, y + offset.y);
+            pixel_color += camera.ray_color(&ray, max_depth, world) * sample_scale;
+        }
+
+        pixel_color
     }
 
     fn sample_square() -> Vec3 {

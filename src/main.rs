@@ -54,6 +54,7 @@ mod maths;
 mod random;
 mod renderer;
 mod scene;
+mod terminal;
 use buffer_display::{ImageDisplay, ImageDisplayState};
 use color_eyre::Result;
 use renderer::Renderer;
