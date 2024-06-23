@@ -1,12 +1,8 @@
+use crate::camera::Camera;
+use crate::color::Color;
 use crate::geometry::*;
 use crate::maths::*;
 use crate::scene::HittableList;
-use ratatui::prelude::Color;
-
-pub struct Camera {
-    pub focal_length: f64,
-    pub origin: Vec3,
-}
 
 pub struct Renderer {
     dimensions: (usize, usize),
@@ -114,13 +110,13 @@ impl Renderer {
         match world.hit(&ray, &Interval::new(0.0, f64::INFINITY)) {
             Some(hit) => {
                 let normal = hit.normal;
-                (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).to_color()
+                Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5
             }
             None => {
                 // background: lerp from white to blue
                 let unit_direction = ray.direction.normalized();
                 let a = 0.5 * (unit_direction.y + 1.0);
-                Vec3::lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), a).to_color()
+                Vec3::lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), a)
             }
         }
     }

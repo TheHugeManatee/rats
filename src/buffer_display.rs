@@ -1,5 +1,5 @@
-use ratatui::prelude::*;
-
+use crate::color::Color;
+use ratatui::prelude::{Buffer, Rect, StatefulWidget};
 /// A widget that renders a buffer
 pub struct ImageDisplay {
     image_buffer: Vec<Vec<Color>>,
@@ -11,7 +11,10 @@ impl ImageDisplay {
             return;
         }
         // Draw the pixel on the buffer
-        buf.get_mut(x, y).set_char('.').set_fg(color).set_bg(color);
+        buf.get_mut(x, y)
+            .set_char('.')
+            .set_fg(color.to_color())
+            .set_bg(color.to_color());
     }
 }
 

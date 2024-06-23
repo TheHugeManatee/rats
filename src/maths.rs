@@ -1,17 +1,16 @@
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub struct Vec2 {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
     pub z: f64,
 }
 
-#[allow(dead_code)]
 impl Vec2 {
     // construct a new Vec2
     pub fn new(x: f64, y: f64) -> Self {
@@ -102,7 +101,6 @@ impl std::ops::Div<f64> for Vec2 {
     }
 }
 
-#[allow(dead_code)]
 impl Vec3 {
     // construct a new Vec3
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -224,7 +222,6 @@ pub struct Interval {
     pub max: f64,
 }
 
-#[allow(dead_code)]
 impl Interval {
     pub fn new(min: f64, max: f64) -> Self {
         Self { min, max }

@@ -46,6 +46,7 @@ pub fn init_panic_hook() {
 }
 
 mod buffer_display;
+mod camera;
 mod color;
 mod geometry;
 mod maths;
