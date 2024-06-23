@@ -149,6 +149,17 @@ impl App {
         let objects_count = format!("Objects: {}", self.renderer.get_scene_object_count());
         buf.set_string(area.left(), area.top() + 2, objects_count, Style::default());
 
+        let render_duration = format!(
+            "Render duration: {:.2?}",
+            self.renderer.get_render_duration()
+        );
+        buf.set_string(
+            area.left(),
+            area.top() + 3,
+            render_duration,
+            Style::default(),
+        );
+
         // Calculate and display the current progress gauge
         let progress = self.renderer.get_progress_percentage();
         let label = format!("{:.1}%", progress * 100.0);

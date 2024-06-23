@@ -1,4 +1,4 @@
-use rand::{thread_rng, Rng};
+use rand::Rng;
 
 pub fn random_double() -> f64 {
     rand::thread_rng().gen_range(0.0..1.0)
