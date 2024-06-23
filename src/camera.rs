@@ -1,6 +1,7 @@
 use crate::color::*;
 use crate::geometry::*;
 use crate::maths::*;
+use crate::random::*;
 use crate::scene::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -58,8 +59,10 @@ impl Camera {
     pub fn ray_color(&self, ray: &Ray, world: &HittableList) -> Color {
         match world.hit(&ray, &Interval::new(0.0, f64::INFINITY)) {
             Some(hit) => {
-                let normal = hit.normal;
-                Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5
+                // recursively trace diffusely reflected ray
+                let direction = random_vec3_on_hemisphere(hit.normal);
+                self.ray_color(&Ray::new(hit.point, direction), world) * 0.5
+                //Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5
             }
             None => {
                 // background: lerp from white to blue

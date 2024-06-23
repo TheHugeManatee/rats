@@ -136,8 +136,8 @@ impl Vec3 {
     }
 
     // dot product
-    pub fn dot(a: Vec3, b: Vec3) -> f64 {
-        a.x * b.x + a.y * b.y + a.z * b.z
+    pub fn dot(&self, other: Vec3) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 
     pub fn lerp(a: Vec3, b: Vec3, t: f64) -> Vec3 {
@@ -210,8 +210,16 @@ impl std::ops::Div<f64> for Vec3 {
     }
 }
 
+// prefix neg
+impl std::ops::Neg for Vec3 {
+    type Output = Self;
+    fn neg(self) -> Self {
+        Self::new(-self.x, -self.y, -self.z)
+    }
+}
+
 pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    v - n * 2.0 * Vec3::dot(v, n)
+    v - n * 2.0 * v.dot(n)
 }
 
 pub fn degrees_to_radians(degrees: f64) -> f64 {

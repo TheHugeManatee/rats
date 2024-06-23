@@ -10,7 +10,7 @@ pub struct HitRecord {
 impl HitRecord {
     // the normal given on construction is expected to point outward from the surface
     pub fn new(point: Point, outward_normal: Vec3, t: f64, ray: &Ray) -> Self {
-        let front_face = Vec3::dot(ray.direction, outward_normal) < 0.0;
+        let front_face = ray.direction.dot(outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
         } else {
@@ -69,7 +69,7 @@ impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
         let oc = self.center - ray.origin;
         let a = ray.direction.length_squared();
-        let h = Vec3::dot(ray.direction, oc);
+        let h = ray.direction.dot(oc);
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = h * h - a * c;
 
