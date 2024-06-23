@@ -1,6 +1,5 @@
 use crate::camera::Camera;
 use crate::color::Color;
-use crate::geometry::*;
 use crate::maths::*;
 use crate::scene::HittableList;
 
@@ -9,9 +8,7 @@ pub struct Renderer {
     color_buffer: Vec<Vec<Color>>,
     next_line_to_process: usize,
     camera: Camera,
-    pixel00_loc: Vec3,
-    pixel_delta_u: Vec3,
-    pixel_delta_v: Vec3,
+
     world: HittableList,
 }
 
@@ -26,34 +23,20 @@ impl Renderer {
         let color_buffer = vec![vec![Color::default(); width]; height];
 
         let pixel_aspect_ratio = 10.0 / 20.0;
-        // camera parameters and vectors across full viewport
         let focal_length = 1.0;
         let camera_center = Vec3::zero();
-        let viewport_height = 2.0;
-        let viewport_width = viewport_height * width as f64 / height as f64;
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0) * pixel_aspect_ratio;
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
-
-        // horizontal and vertical delta vectors
-        let pixel_delta_u = viewport_u / width as f64;
-        let pixel_delta_v = viewport_v / height as f64;
-
-        // location of the upper left pixel
-        let viewport_upper_left =
-            camera_center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
-        let pixel00_loc = viewport_upper_left + pixel_delta_u / 2.0 + pixel_delta_v / 2.0;
 
         Renderer {
             dimensions: (width, height),
             color_buffer,
             next_line_to_process: 0,
-            camera: Camera {
+            camera: Camera::new(
+                width as f64,
+                height as f64,
+                pixel_aspect_ratio,
                 focal_length,
-                origin: camera_center,
-            },
-            pixel00_loc,
-            pixel_delta_u,
-            pixel_delta_v,
+                camera_center,
+            ),
             world: HittableList::default(),
         }
     }
@@ -97,27 +80,10 @@ impl Renderer {
         for (xi, pixel) in row.iter_mut().enumerate() {
             let x: f64 = xi as f64;
             let y: f64 = line_index as f64;
-            let pixel_center = self.pixel00_loc + self.pixel_delta_u * x + self.pixel_delta_v * y;
-            // create a ray from the camera origin to the pixel
-            // direction is intentionally not normalized
-            let ray = Ray::new(self.camera.origin, pixel_center - self.camera.origin);
 
-            *pixel = Self::ray_color(&self.world, ray);
-        }
-    }
+            let ray = self.camera.get_pixel_ray(x, y);
 
-    fn ray_color(world: &HittableList, ray: Ray) -> Color {
-        match world.hit(&ray, &Interval::new(0.0, f64::INFINITY)) {
-            Some(hit) => {
-                let normal = hit.normal;
-                Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5
-            }
-            None => {
-                // background: lerp from white to blue
-                let unit_direction = ray.direction.normalized();
-                let a = 0.5 * (unit_direction.y + 1.0);
-                Vec3::lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), a)
-            }
+            *pixel = self.camera.ray_color(&ray, &self.world);
         }
     }
 }
