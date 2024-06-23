@@ -70,7 +70,7 @@ impl Renderer {
                 focal_length,
                 camera_center,
             ),
-            samples_per_pixel: 300,
+            samples_per_pixel: 500,
             max_depth: 10,
             world: HittableList::default(),
         }

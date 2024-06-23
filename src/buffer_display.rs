@@ -53,6 +53,7 @@ impl<'a> StatefulWidget for ImageDisplay<'a> {
 
                 // get the color from the source image
                 if src_x >= image_width || src_y >= image_height || src_x < 0.0 || src_y < 0.0 {
+                    self.draw_pixel(buf, x, y, Color::default());
                     continue;
                 }
                 let color = self.image_buffer.get_pixel(src_x as usize, src_y as usize);
