@@ -58,7 +58,7 @@ impl Renderer {
 
         let pixel_aspect_ratio = 10.0 / 20.0;
         let focal_length = 1.0;
-        let camera_center = Vec3::zero();
+        let camera_center = Vec3::new(0.0, 0.0, 0.5);
 
         Renderer {
             color_buffer,
@@ -151,8 +151,6 @@ impl Renderer {
         for _ in 0..samples_per_pixel / subpixels_per_pixel {
             for subpixel_y in 0..SUBPIXEL_Y {
                 for subpixel_x in 0..SUBPIXEL_X {
-                    let subpixel_index = subpixel_x * SUBPIXEL_X + subpixel_y;
-
                     //let offset = Vec3::new(subpixel_x as f64, subpixel_y as f64, 0.0)
                     //    + Renderer::sample_square() * subpixel_size;
                     //let offset = Vec3::default();
@@ -166,8 +164,9 @@ impl Renderer {
                 }
             }
         }
-        let col = pixel.average_color();
-        TerminalPixel::new(col, col, ' ')
+        //let col = pixel.average_color();
+        //TerminalPixel::new(col, col, ' ')
+        pixel.to_terminal_pixel()
     }
 
     fn sample_square() -> Vec3 {

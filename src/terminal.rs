@@ -72,4 +72,16 @@ impl RenderPixel {
         }
         color / (SUBPIXEL_X * SUBPIXEL_Y) as f64
     }
+
+    pub fn to_terminal_pixel(&self) -> TerminalPixel {
+        // average the upper and the lower half separately
+        let color_upper =
+            (self.colors[0][0] + self.colors[0][1] + self.colors[1][0] + self.colors[1][1]) / 4.0;
+        let color_lower =
+            (self.colors[2][0] + self.colors[2][1] + self.colors[3][0] + self.colors[3][1]) / 4.0;
+
+        let character = '▄'; // half block
+
+        TerminalPixel::new(color_lower, color_upper, character)
+    }
 }
