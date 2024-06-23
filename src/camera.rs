@@ -1,7 +1,6 @@
 use crate::color::*;
 use crate::geometry::*;
 use crate::maths::*;
-use crate::random::*;
 use crate::scene::*;
 
 #[derive(Debug, Clone, Copy)]

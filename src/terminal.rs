@@ -2,6 +2,7 @@ use crate::color::Color;
 use crate::maths::Vec3;
 
 // a terminal pixel is a pixel rendered onto the terminal.
+#[derive(Debug, Clone, Copy)]
 pub struct TerminalPixel {
     pub fg: Color,
     pub bg: Color,
@@ -11,6 +12,15 @@ pub struct TerminalPixel {
 impl TerminalPixel {
     pub fn new(fg: Color, bg: Color, character: char) -> Self {
         Self { fg, bg, character }
+    }
+}
+impl Default for TerminalPixel {
+    fn default() -> Self {
+        Self {
+            fg: Color::default(),
+            bg: Color::default(),
+            character: ' ',
+        }
     }
 }
 

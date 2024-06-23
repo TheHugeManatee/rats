@@ -1,5 +1,5 @@
-use crate::color::Color;
 use crate::renderer::FrameBuffer;
+use crate::terminal::TerminalPixel;
 use ratatui::prelude::{Buffer, Rect, StatefulWidget};
 
 /// A widget that renders a buffer
@@ -12,15 +12,15 @@ impl<'a> ImageDisplay<'a> {
         Self { image_buffer }
     }
 
-    fn draw_pixel(&self, buf: &mut Buffer, x: u16, y: u16, color: Color) {
+    fn draw_pixel(&self, buf: &mut Buffer, x: u16, y: u16, pixel: TerminalPixel) {
         if x >= buf.area().width || y >= buf.area().height {
             return;
         }
         // Draw the pixel on the buffer
         buf.get_mut(x, y)
-            .set_char('.')
-            .set_fg(color.to_color())
-            .set_bg(color.to_color());
+            .set_char(pixel.character)
+            .set_fg(pixel.fg.to_color())
+            .set_bg(pixel.bg.to_color());
     }
 }
 
@@ -53,13 +53,13 @@ impl<'a> StatefulWidget for ImageDisplay<'a> {
 
                 // get the color from the source image
                 if src_x >= image_width || src_y >= image_height || src_x < 0.0 || src_y < 0.0 {
-                    self.draw_pixel(buf, x, y, Color::default());
+                    self.draw_pixel(buf, x, y, TerminalPixel::default());
                     continue;
                 }
-                let color = self.image_buffer.get_pixel(src_x as usize, src_y as usize);
+                let pixel = self.image_buffer.get_pixel(src_x as usize, src_y as usize);
 
                 // draw the pixel to the target buffer
-                self.draw_pixel(buf, x, y, color);
+                self.draw_pixel(buf, x, y, pixel);
             }
         }
     }

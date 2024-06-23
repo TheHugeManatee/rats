@@ -1,9 +1,9 @@
-use crate::camera;
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::maths::*;
 use crate::random::*;
 use crate::scene::HittableList;
+use crate::terminal::*;
 
 pub struct Renderer {
     color_buffer: FrameBuffer,
@@ -18,7 +18,7 @@ pub struct Renderer {
 pub struct FrameBuffer {
     pub width: usize,
     pub height: usize,
-    pixels: Vec<Color>,
+    pixels: Vec<TerminalPixel>,
 }
 
 impl FrameBuffer {
@@ -26,17 +26,17 @@ impl FrameBuffer {
         FrameBuffer {
             width,
             height,
-            pixels: vec![Color::default(); width * height],
+            pixels: vec![TerminalPixel::default(); width * height],
         }
     }
 
-    pub fn get_pixel(&self, x: usize, y: usize) -> Color {
+    pub fn get_pixel(&self, x: usize, y: usize) -> TerminalPixel {
         self.pixels[y * self.width + x]
     }
-    pub fn get_pixel_mut(&mut self, x: usize, y: usize) -> &mut Color {
+    pub fn get_pixel_mut(&mut self, x: usize, y: usize) -> &mut TerminalPixel {
         &mut self.pixels[y * self.width + x]
     }
-    pub fn get_rows_mut(&mut self) -> Vec<&mut [Color]> {
+    pub fn get_rows_mut(&mut self) -> Vec<&mut [TerminalPixel]> {
         self.pixels.chunks_mut(self.width).collect()
     }
     pub fn get_size(&self) -> (usize, usize) {
@@ -141,7 +141,7 @@ impl Renderer {
         camera: &Camera,
         world: &HittableList,
         max_depth: i32,
-    ) -> Color {
+    ) -> TerminalPixel {
         let mut pixel_color = Color::default();
         for _ in 0..samples_per_pixel {
             let offset = Renderer::sample_square();
@@ -150,7 +150,7 @@ impl Renderer {
             pixel_color += camera.ray_color(&ray, max_depth, world) * sample_scale;
         }
 
-        pixel_color
+        TerminalPixel::new(pixel_color, pixel_color, ' ')
     }
 
     fn sample_square() -> Vec3 {
