@@ -19,6 +19,9 @@ impl Vec2 {
     pub fn zero() -> Self {
         Self::new(0.0, 0.0)
     }
+    pub fn one() -> Self {
+        Self::new(1.0, 1.0)
+    }
 
     // calculate the length of a Vec2
     pub fn length(&self) -> f64 {
@@ -108,6 +111,9 @@ impl Vec3 {
     }
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
+    }
+    pub fn one() -> Self {
+        Self::new(1.0, 1.0, 1.0)
     }
 
     // calculate the cross product of two Vec3s

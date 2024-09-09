@@ -58,7 +58,7 @@ impl Renderer {
 
         let pixel_aspect_ratio = 10.0 / 20.0;
         let focal_length = 1.0;
-        let camera_center = Vec3::new(0.0, 0.0, 0.5);
+        let camera_center = Vec3::new(0.0, 0.0, 0.0);
 
         Renderer {
             color_buffer,
@@ -94,7 +94,7 @@ impl Renderer {
     pub fn render_step(&mut self) {
         let mut lines_processed = 0;
 
-        // render line-by line, but only for a maximum of 10ms
+        // render line-by line, but only for a maximum of 15ms
         let start = std::time::Instant::now();
         while start.elapsed() < std::time::Duration::from_millis(15) {
             if self.next_line_to_process < self.color_buffer.height {

@@ -29,4 +29,18 @@ impl Color {
             z: color.z.sqrt(),
         }
     }
+
+    pub fn brightness(&self) -> f64 {
+        0.299 * self.x + 0.587 * self.y + 0.114 * self.z
+    }
+
+    pub fn black() -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
+    pub fn white() -> Color {
+        Color::new(1.0, 1.0, 1.0)
+    }
+    pub fn pink() -> Color {
+        Color::new(1.0, 0.0, 1.0)
+    }
 }

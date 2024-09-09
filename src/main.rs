@@ -104,6 +104,11 @@ impl App {
                         KeyCode::Char(' ') => self.show_side_panel = !self.show_side_panel,
                         KeyCode::Char('j') => self.display_state.zoom += 0.1,
                         KeyCode::Char('k') => self.display_state.zoom -= 0.1,
+                        KeyCode::Char('r') => {
+                            self.display_state.zoom = 1.0;
+                            self.display_state.x = 0.0;
+                            self.display_state.y = 0.0;
+                        }
                         KeyCode::Right => self.display_state.x += 1.0,
                         KeyCode::Left => self.display_state.x -= 1.0,
                         KeyCode::Up => self.display_state.y -= 1.0,
